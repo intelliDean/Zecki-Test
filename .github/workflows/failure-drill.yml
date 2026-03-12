@@ -111,7 +111,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          artifact_name="zeckit-e2e-logs-${{ github.run_number }}"
+          artifact_name="zeckit-e2e-logs-zaino-${{ github.run_number }}"
           download_dir="/tmp/drill-overflow-artifacts"
 
           echo "Downloading artifact: $artifact_name"
@@ -213,7 +213,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          artifact_name="zeckit-e2e-logs-${{ github.run_number }}"
+          artifact_name="zeckit-e2e-logs-lwd-${{ github.run_number }}"
           download_dir="/tmp/drill-startup-artifacts"
 
           echo "Downloading artifact: $artifact_name"
