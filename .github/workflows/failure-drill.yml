@@ -70,6 +70,21 @@ jobs:
       test_result: ${{ steps.zeckit.outputs.test_result }}
 
     steps:
+      - name: "Check for local ZecKit"
+        id: local-zeckit
+        shell: bash
+        run: |
+          if [ -f .zeckit-action/action.yml ]; then
+            echo "exists=true" >> $GITHUB_OUTPUT
+            echo "::notice::Using local ZecKit action found in .zeckit-action"
+          else
+            echo "exists=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Checkout ZecKit (GitHub Case)
+        if: steps.local-zeckit.outputs.exists != 'true'
+
+
       - name: Checkout sample repo
         uses: actions/checkout@v4
 
@@ -81,8 +96,7 @@ jobs:
 
       - name: ZecKit E2E – send overflow drill
         id: zeckit
-        # ── Fork branch under test (update ref after merge) ──
-        uses: intelliDean/ZecKit@m3-implementation
+        uses: ./.zeckit-action
         with:
           backend:                 zaino
           image_prefix:            'ghcr.io/intellidean/zeckit'
@@ -174,6 +188,21 @@ jobs:
       test_result: ${{ steps.zeckit.outputs.test_result }}
 
     steps:
+      - name: "Check for local ZecKit"
+        id: local-zeckit
+        shell: bash
+        run: |
+          if [ -f .zeckit-action/action.yml ]; then
+            echo "exists=true" >> $GITHUB_OUTPUT
+            echo "::notice::Using local ZecKit action found in .zeckit-action"
+          else
+            echo "exists=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Checkout ZecKit (GitHub Case)
+        if: steps.local-zeckit.outputs.exists != 'true'
+
+
       - name: Checkout sample repo
         uses: actions/checkout@v4
 
@@ -185,7 +214,7 @@ jobs:
 
       - name: ZecKit E2E – startup timeout drill
         id: zeckit
-        uses: intelliDean/ZecKit@m3-implementation
+        uses: ./.zeckit-action
         with:
           backend:                 lwd
           image_prefix:            'ghcr.io/intellidean/zeckit'

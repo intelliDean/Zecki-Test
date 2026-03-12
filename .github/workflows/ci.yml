@@ -68,13 +68,29 @@ jobs:
       test_result:           ${{ steps.zeckit.outputs.test_result }}
 
     steps:
-      - name: Checkout sample repo
+      - name: "Check for local ZecKit"
+        id: local-zeckit
+        shell: bash
+        run: |
+          if [ -f .zeckit-action/action.yml ]; then
+            echo "exists=true" >> $GITHUB_OUTPUT
+            echo "::notice::Using local ZecKit action found in .zeckit-action"
+          else
+            echo "exists=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Checkout ZecKit (GitHub Case)
+        if: steps.local-zeckit.outputs.exists != 'true'
         uses: actions/checkout@v4
+        with:
+          repository: intelliDean/ZecKit
+          ref: m3-implementation
+          path: .zeckit-action
 
       - name: ZecKit E2E – lightwalletd
         id: zeckit
-        # ── Fork branch under test (update ref after merge) ──
-        uses: intelliDean/ZecKit@m3-implementation
+        # ── Using local checkout ──
+        uses: ./.zeckit-action
         with:
           backend:                 lwd
           image_prefix:            'ghcr.io/intellidean/zeckit'
@@ -117,6 +133,25 @@ jobs:
       test_result:           ${{ steps.zeckit.outputs.test_result }}
 
     steps:
+      - name: "Check for local ZecKit"
+        id: local-zeckit
+        shell: bash
+        run: |
+          if [ -f .zeckit-action/action.yml ]; then
+            echo "exists=true" >> $GITHUB_OUTPUT
+            echo "::notice::Using local ZecKit action found in .zeckit-action"
+          else
+            echo "exists=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Checkout ZecKit (GitHub Case)
+        if: steps.local-zeckit.outputs.exists != 'true'
+        uses: actions/checkout@v4
+        with:
+          repository: intelliDean/ZecKit
+          ref: m3-implementation
+          path: .zeckit-action
+
       - name: Checkout sample repo
         uses: actions/checkout@v4
 
@@ -127,7 +162,7 @@ jobs:
 
       - name: ZecKit E2E – zaino
         id: zeckit
-        uses: intelliDean/ZecKit@m3-implementation
+        uses: ./.zeckit-action
         with:
           backend:                 zaino
           image_prefix:            'ghcr.io/intellidean/zeckit'
@@ -152,11 +187,81 @@ jobs:
           echo "  Result          : ${{ steps.zeckit.outputs.test_result }}"
 
   # ============================================================
+  # HAPPY PATH – Application & Asset Verification
+  # Explicitly demonstrates cluster existence and balance checks.
+  # ============================================================
+  happy-path:
+    name: "Happy Path – Asset Verification"
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    outputs:
+      unified_address:       ${{ steps.zeckit.outputs.unified_address }}
+      shield_txid:           ${{ steps.zeckit.outputs.shield_txid }}
+      send_txid:             ${{ steps.zeckit.outputs.send_txid }}
+      final_orchard_balance: ${{ steps.zeckit.outputs.final_orchard_balance }}
+      block_height:          ${{ steps.zeckit.outputs.block_height }}
+      test_result:           ${{ steps.zeckit.outputs.test_result }}
+
+    steps:
+      - name: "Check for local ZecKit"
+        id: local-zeckit
+        shell: bash
+        run: |
+          if [ -f .zeckit-action/action.yml ]; then
+            echo "exists=true" >> $GITHUB_OUTPUT
+            echo "::notice::Using local ZecKit action found in .zeckit-action"
+          else
+            echo "exists=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Checkout ZecKit (GitHub Case)
+        if: steps.local-zeckit.outputs.exists != 'true'
+        uses: actions/checkout@v4
+        with:
+          repository: intelliDean/ZecKit
+          ref: m3-implementation
+          path: .zeckit-action
+
+      - name: ZecKit E2E – Happy Path
+        id: zeckit
+        uses: ./.zeckit-action
+        with:
+          backend:                 zaino
+          image_prefix:            'ghcr.io/intellidean/zeckit'
+          startup_timeout_minutes: '15'
+          send_amount:             '0.1'
+          send_memo:               'Happy Path Verification'
+          ghcr_token:              ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Verify Cluster & Balance (Direct API)
+        shell: bash
+        run: |
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo "  Manual Asset Verification (CURL)"
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          
+          echo "1. Checking Faucet Stats..."
+          curl -s http://127.0.0.1:8080/stats | jq .
+          
+          echo "2. Verifying Orchard balance (ZIP-316)..."
+          orchard_bal=$(curl -s http://127.0.0.1:8080/stats | jq -r .orchard_balance)
+          echo "   Current Orchard: $orchard_bal ZEC"
+          
+          # Simple bash numeric check
+          if [ "$(echo "$orchard_bal > 0" | bc -l)" -eq 1 ]; then
+            echo "✅ SUCCESS: Regtest node is running and funds are matured."
+          else
+            echo "::error::Regtest failure: Orchard balance is $orchard_bal (expected > 0)"
+            exit 1
+          fi
+
+  # ============================================================
   # GATE – enforces that lwd passed; surfaces zaino signal
   # ============================================================
   ci-gate:
     name: "CI Gate"
-    needs: [e2e-lwd, e2e-zaino]
+    needs: [e2e-lwd, e2e-zaino, happy-path]
     runs-on: ubuntu-latest
     if: always()
 
@@ -166,8 +271,10 @@ jobs:
         run: |
           lwd_result="${{ needs.e2e-lwd.result }}"
           zaino_result="${{ needs.e2e-zaino.result }}"
+          happy_result="${{ needs.happy-path.result }}"
           lwd_e2e="${{ needs.e2e-lwd.outputs.test_result }}"
           zaino_e2e="${{ needs.e2e-zaino.outputs.test_result }}"
+          happy_e2e="${{ needs.happy-path.outputs.test_result }}"
 
           echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
           echo "  CI Gate Summary"
@@ -175,6 +282,7 @@ jobs:
           echo ""
           echo "  lightwalletd  job: $lwd_result  │  e2e: $lwd_e2e"
           echo "  zaino         job: $zaino_result  │  e2e: $zaino_e2e  (experimental)"
+          echo "  happy-path    job: $happy_result  │  e2e: $happy_e2e"
           echo ""
 
           {
@@ -192,10 +300,20 @@ jobs:
             else
               echo "| zaino | ⚠️ $zaino_result | $zaino_e2e | no (experimental) |"
             fi
+            if [[ "$happy_result" == "success" ]]; then
+              echo "| happy-path | ✅ $happy_result | $happy_e2e | **YES** |"
+            else
+              echo "| happy-path | ❌ $happy_result | $happy_e2e | **YES** |"
+            fi
           } >> "$GITHUB_STEP_SUMMARY"
 
           if [[ "$lwd_result" != "success" ]]; then
             echo "::error::Required job 'e2e-lwd' did not succeed ($lwd_result). Blocking merge."
+            exit 1
+          fi
+
+          if [[ "$happy_result" != "success" ]]; then
+            echo "::error::Required job 'happy-path' did not succeed ($happy_result). Blocking merge."
             exit 1
           fi
 

@@ -8,9 +8,13 @@ Move the contents of this folder to a new repository and push to GitHub.
 The workflows run immediately without any extra configuration beyond a
 `GITHUB_TOKEN` with `read:packages` scope (which every repo already has).
 
-> **Note:** Workflows currently reference `intelliDean/ZecKit@m3-implementation`
-> (the fork branch under review). Update all `uses:` lines to
-> `zecdev/ZecKit@v1` after the PR is merged.
+> **Note:** Workflows now reference a local checkout of `intelliDean/ZecKit@m3-implementation` 
+> for consistent testing of the action during development.
+>
+> To test your local changes in the `ZecKit` project, you can use the provided script:
+> ```bash
+> ./test-local.sh [lwd|zaino]
+> ```
 
 ---
 
