@@ -234,23 +234,27 @@ jobs:
           send_memo:               'Happy Path Verification'
           ghcr_token:              ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Verify Cluster & Balance (Direct API)
+      - name: Verify Cluster & Balance (Example App)
         shell: bash
         run: |
           echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-          echo "  Manual Asset Verification (CURL)"
+          echo "  Integrated Application Verification"
           echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
           
-          echo "1. Checking Faucet Stats..."
-          curl -s http://127.0.0.1:8080/stats | jq .
+          cd example-app
+          echo "1. Installing app dependencies..."
+          npm install
           
-          echo "2. Verifying Orchard balance (ZIP-316)..."
+          echo "2. Executing Example App (Safe Send)..."
+          npm start
+          
+          echo ""
+          echo "3. Final Balance Check (CURL)..."
           orchard_bal=$(curl -s http://127.0.0.1:8080/stats | jq -r .orchard_balance)
           echo "   Current Orchard: $orchard_bal ZEC"
           
-          # Simple bash numeric check
           if [ "$(echo "$orchard_bal > 0" | bc -l)" -eq 1 ]; then
-            echo "✅ SUCCESS: Regtest node is running and funds are matured."
+            echo "✅ SUCCESS: Standard dApp connection verified."
           else
             echo "::error::Regtest failure: Orchard balance is $orchard_bal (expected > 0)"
             exit 1

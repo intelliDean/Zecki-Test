@@ -28,7 +28,14 @@ Runs on every push / PR to `main`.
 |---|---|---|---|
 | `e2e-lwd` | lightwalletd | no | **YES** |
 | `e2e-zaino` | zaino | yes | no — experimental |
-| `ci-gate` | — | — | Blocks on `e2e-lwd`; surfaces zaino signal in step summary |
+| `happy-path` | zaino | no | **YES** (Verifies the integrated app) |
+| `ci-gate` | — | — | Blocks on `e2e-lwd` & `happy-path` |
+
+### Integrated [`example-app/`](./example-app) — Developer Template
+This repository includes a functional Node.js application that demonstrates how to connect to the ZecKit Devnet.
+
+- **Automated**: The `happy-path` CI job and `./test-local.sh` automatically execute this app to verify the network.
+- **Manual**: You can run it yourself to test the connection (see [demo.md](./demo.md)).
 
 ### [`failure-drill.yml`](.github/workflows/failure-drill.yml) — Artifact Verification
 
