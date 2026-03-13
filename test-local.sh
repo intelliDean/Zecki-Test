@@ -26,7 +26,10 @@ echo "  Backend      : $BACKEND"
 echo ":: Rebuilding ZecKit CLI..."
 (cd "$ZECKIT_PATH/cli" && cargo build --release)
 
-# 3. Start services
+# 3. Start services with a clean state
+echo ":: Purging old devnet state..."
+"$ZECKIT_EXE" --project-dir "$ZECKIT_PATH" down --purge
+
 echo ":: Starting devnet..."
 "$ZECKIT_EXE" --project-dir "$ZECKIT_PATH" up --backend "$BACKEND"
 
