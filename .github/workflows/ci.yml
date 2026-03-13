@@ -68,6 +68,9 @@ jobs:
       test_result:           ${{ steps.zeckit.outputs.test_result }}
 
     steps:
+      - name: Checkout sample repo
+        uses: actions/checkout@v4
+
       - name: "Check for local ZecKit"
         id: local-zeckit
         shell: bash
@@ -133,6 +136,9 @@ jobs:
       test_result:           ${{ steps.zeckit.outputs.test_result }}
 
     steps:
+      - name: Checkout sample repo
+        uses: actions/checkout@v4
+
       - name: "Check for local ZecKit"
         id: local-zeckit
         shell: bash
@@ -151,9 +157,6 @@ jobs:
           repository: intelliDean/ZecKit
           ref: m3-implementation
           path: .zeckit-action
-
-      - name: Checkout sample repo
-        uses: actions/checkout@v4
 
       - name: "⚠️ Experimental – zaino backend"
         run: |
@@ -204,6 +207,9 @@ jobs:
       test_result:           ${{ steps.zeckit.outputs.test_result }}
 
     steps:
+      - name: Checkout sample repo
+        uses: actions/checkout@v4
+
       - name: "Check for local ZecKit"
         id: local-zeckit
         shell: bash
