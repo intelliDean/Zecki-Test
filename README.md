@@ -129,4 +129,3 @@ is broken. Check the action version and `upload_artifacts` input.
 | Drill assert fails | Artifact collection broken; check action version |
 
 Full troubleshooting → [docs/github-action.md](https://github.com/intelliDean/ZecKit/blob/m3-implementation/docs/github-action.md#common-failure-modes--troubleshooting)
-# Zecki-Test
