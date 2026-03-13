@@ -17,4 +17,3 @@ __pycache__/
 .zeckit-action/
 test-local.sh
 link-local.sh
-demo.md
