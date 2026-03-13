@@ -13,7 +13,7 @@ __pycache__/
 *.orig
 *.rej
 
-# ZecKit Local Development
+# ZecKit Local Development (Tracked)
+# .zeckit-action/ matches the symlink, which we keep ignored.
 .zeckit-action/
-test-local.sh
-link-local.sh
+# link-local.sh and test-local.sh are now part of the repo.
