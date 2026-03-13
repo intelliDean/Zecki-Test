@@ -81,7 +81,7 @@ CI kicks off automatically on push. No secrets need to be added —
     ghcr_token:              ${{ secrets.GITHUB_TOKEN }}
 ```
 
-Full reference → [ZecKit docs/github-action.md](https://github.com/intelliDean/ZecKit/blob/m3-implementation/docs/github-action.md)
+Full reference → [ZecKit README](https://github.com/intelliDean/ZecKit/blob/m3-implementation/README.md)
 
 ---
 
@@ -128,4 +128,4 @@ is broken. Check the action version and `upload_artifacts` input.
 | Artifacts not uploaded | Ensure `ghcr_token` has `read:packages` scope |
 | Drill assert fails | Artifact collection broken; check action version |
 
-Full troubleshooting → [docs/github-action.md](https://github.com/intelliDean/ZecKit/blob/m3-implementation/docs/github-action.md#common-failure-modes--troubleshooting)
+Full troubleshooting → [ZecKit README Troubleshooting](https://github.com/intelliDean/ZecKit/blob/m3-implementation/README.md#troubleshooting)
