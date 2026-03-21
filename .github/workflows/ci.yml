@@ -71,29 +71,9 @@ jobs:
       - name: Checkout sample repo
         uses: actions/checkout@v4
 
-      - name: "Check for local ZecKit"
-        id: local-zeckit
-        shell: bash
-        run: |
-          if [ -f .zeckit-action/action.yml ]; then
-            echo "exists=true" >> $GITHUB_OUTPUT
-            echo "::notice::Using local ZecKit action found in .zeckit-action"
-          else
-            echo "exists=false" >> $GITHUB_OUTPUT
-          fi
-
-      - name: Checkout ZecKit (GitHub Case)
-        if: steps.local-zeckit.outputs.exists != 'true'
-        uses: actions/checkout@v4
-        with:
-          repository: intelliDean/ZecKit
-          ref: m3-implementation
-          path: .zeckit-action
-
       - name: ZecKit E2E – lightwalletd
         id: zeckit
-        # ── Using local checkout ──
-        uses: ./.zeckit-action
+        uses: intelliDean/ZecKit@m3-implementation
         with:
           backend:                 lwd
           image_prefix:            'ghcr.io/intellidean/zeckit'
@@ -139,33 +119,9 @@ jobs:
       - name: Checkout sample repo
         uses: actions/checkout@v4
 
-      - name: "Check for local ZecKit"
-        id: local-zeckit
-        shell: bash
-        run: |
-          if [ -f .zeckit-action/action.yml ]; then
-            echo "exists=true" >> $GITHUB_OUTPUT
-            echo "::notice::Using local ZecKit action found in .zeckit-action"
-          else
-            echo "exists=false" >> $GITHUB_OUTPUT
-          fi
-
-      - name: Checkout ZecKit (GitHub Case)
-        if: steps.local-zeckit.outputs.exists != 'true'
-        uses: actions/checkout@v4
-        with:
-          repository: intelliDean/ZecKit
-          ref: m3-implementation
-          path: .zeckit-action
-
-      - name: "⚠️ Experimental – zaino backend"
-        run: |
-          echo "::notice::This job uses the zaino backend and is marked experimental."
-          echo "::notice::A failure here does not block CI but is tracked for signal."
-
       - name: ZecKit E2E – zaino
         id: zeckit
-        uses: ./.zeckit-action
+        uses: intelliDean/ZecKit@m3-implementation
         with:
           backend:                 zaino
           image_prefix:            'ghcr.io/intellidean/zeckit'
@@ -210,28 +166,9 @@ jobs:
       - name: Checkout sample repo
         uses: actions/checkout@v4
 
-      - name: "Check for local ZecKit"
-        id: local-zeckit
-        shell: bash
-        run: |
-          if [ -f .zeckit-action/action.yml ]; then
-            echo "exists=true" >> $GITHUB_OUTPUT
-            echo "::notice::Using local ZecKit action found in .zeckit-action"
-          else
-            echo "exists=false" >> $GITHUB_OUTPUT
-          fi
-
-      - name: Checkout ZecKit (GitHub Case)
-        if: steps.local-zeckit.outputs.exists != 'true'
-        uses: actions/checkout@v4
-        with:
-          repository: intelliDean/ZecKit
-          ref: m3-implementation
-          path: .zeckit-action
-
       - name: ZecKit E2E – Happy Path
         id: zeckit
-        uses: ./.zeckit-action
+        uses: intelliDean/ZecKit@m3-implementation
         with:
           backend:                 zaino
           image_prefix:            'ghcr.io/intellidean/zeckit'

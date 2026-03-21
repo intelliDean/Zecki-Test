@@ -73,34 +73,9 @@ jobs:
       - name: Checkout sample repo
         uses: actions/checkout@v4
 
-      - name: "Check for local ZecKit"
-        id: local-zeckit
-        shell: bash
-        run: |
-          if [ -f .zeckit-action/action.yml ]; then
-            echo "exists=true" >> $GITHUB_OUTPUT
-            echo "::notice::Using local ZecKit action found in .zeckit-action"
-          else
-            echo "exists=false" >> $GITHUB_OUTPUT
-          fi
-
-      - name: Checkout ZecKit (GitHub Case)
-        if: steps.local-zeckit.outputs.exists != 'true'
-        uses: actions/checkout@v4
-        with:
-          repository: intelliDean/ZecKit
-          ref: m3-implementation
-          path: .zeckit-action
-
-      - name: "🔴 DRILL: inject impossible send amount (999 ZEC)"
-        run: |
-          echo "::notice::Failure drill – injecting send_amount=999 ZEC."
-          echo "::notice::Devnet wallet will have ~0.05-5 ZEC; send must fail."
-          echo "::notice::upload_artifacts=always ensures logs land regardless."
-
       - name: ZecKit E2E – send overflow drill
         id: zeckit
-        uses: ./.zeckit-action
+        uses: intelliDean/ZecKit@m3-implementation
         with:
           backend:                 zaino
           image_prefix:            'ghcr.io/intellidean/zeckit'
@@ -195,34 +170,9 @@ jobs:
       - name: Checkout sample repo
         uses: actions/checkout@v4
 
-      - name: "Check for local ZecKit"
-        id: local-zeckit
-        shell: bash
-        run: |
-          if [ -f .zeckit-action/action.yml ]; then
-            echo "exists=true" >> $GITHUB_OUTPUT
-            echo "::notice::Using local ZecKit action found in .zeckit-action"
-          else
-            echo "exists=false" >> $GITHUB_OUTPUT
-          fi
-
-      - name: Checkout ZecKit (GitHub Case)
-        if: steps.local-zeckit.outputs.exists != 'true'
-        uses: actions/checkout@v4
-        with:
-          repository: intelliDean/ZecKit
-          ref: m3-implementation
-          path: .zeckit-action
-
-      - name: "🔴 DRILL: inject startup timeout (lwd needs 3-4 min; timeout=1 min)"
-        run: |
-          echo "::notice::Failure drill – setting startup_timeout_minutes=1 for lwd backend."
-          echo "::notice::lwd normally takes 3-4 minutes; this will time out at the health-wait step."
-          echo "::notice::Artifacts will contain partial container startup logs."
-
       - name: ZecKit E2E – startup timeout drill
         id: zeckit
-        uses: ./.zeckit-action
+        uses: intelliDean/ZecKit@m3-implementation
         with:
           backend:                 lwd
           image_prefix:            'ghcr.io/intellidean/zeckit'
