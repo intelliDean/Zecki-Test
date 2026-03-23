@@ -191,17 +191,22 @@ jobs:
           echo "2. Executing Example App (Safe Send)..."
           npm start
           
-          echo ""
-          echo "3. Final Balance Check (CURL)..."
-          orchard_bal=$(curl -s http://127.0.0.1:8080/stats | jq -r .orchard_balance)
-          echo "   Current Orchard: $orchard_bal ZEC"
-          
-          if [ "$(echo "$orchard_bal > 0" | bc -l)" -eq 1 ]; then
-            echo "✅ SUCCESS: Standard dApp connection verified."
-          else
-            echo "::error::Regtest failure: Orchard balance is $orchard_bal (expected > 0)"
-            exit 1
-          fi
+          echo "3. Final Balance Check (CURL) with retry..."
+          # The faucet note might be spent and change not yet mined/synced. Wait for it.
+          for i in {1..10}; do
+            orchard_bal=$(curl -s http://127.0.0.1:8080/stats | jq -r .orchard_balance)
+            echo "Attempt $i: Current Orchard: $orchard_bal ZEC"
+            if (( $(echo "$orchard_bal > 0" | bc -l) )); then
+              echo "✓ Success! Faucet recovered balance."
+              break
+            fi
+            if [ $i -eq 10 ]; then
+              echo "❌ Error: Orchard balance stayed at 0.0 after 150 seconds."
+              exit 1
+            fi
+            echo "Waiting for mining/sync..."
+            sleep 15
+          done
 
   # ============================================================
   # GATE – enforces that lwd passed; surfaces zaino signal
