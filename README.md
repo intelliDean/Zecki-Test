@@ -8,7 +8,7 @@ Move the contents of this folder to a new repository and push to GitHub.
 The workflows run immediately without any extra configuration beyond a
 `GITHUB_TOKEN` with `read:packages` scope (which every repo already has).
 
-> **Note:** Workflows now reference a local checkout of `intelliDean/ZecKit@m3-implementation` 
+> **Note:** Workflows now reference a local checkout of `intelliDean/ZecKit@feat/standalone-cli` 
 > for consistent testing of the action during development.
 >
 > To test your local changes in the `ZecKit` project, you can use the provided script:
@@ -69,7 +69,7 @@ CI kicks off automatically on push. No secrets need to be added —
 ## How to Configure Inputs
 
 ```yaml
-- uses: intelliDean/ZecKit@m3-implementation   # → zecdev/ZecKit@v1 after merge
+- uses: intelliDean/ZecKit@feat/standalone-cli   # → zecdev/ZecKit@v1 after merge
   with:
     backend:                 lwd          # 'lwd' or 'zaino'
     startup_timeout_minutes: '15'         # default 10
@@ -81,7 +81,7 @@ CI kicks off automatically on push. No secrets need to be added —
     ghcr_token:              ${{ secrets.GITHUB_TOKEN }}
 ```
 
-Full reference → [ZecKit README](https://github.com/intelliDean/ZecKit/blob/m3-implementation/README.md)
+Full reference → [ZecKit README](https://github.com/intelliDean/ZecKit/blob/feat/standalone-cli/README.md)
 
 ---
 
@@ -128,4 +128,4 @@ is broken. Check the action version and `upload_artifacts` input.
 | Artifacts not uploaded | Ensure `ghcr_token` has `read:packages` scope |
 | Drill assert fails | Artifact collection broken; check action version |
 
-Full troubleshooting → [ZecKit README Troubleshooting](https://github.com/intelliDean/ZecKit/blob/m3-implementation/README.md#troubleshooting)
+Full troubleshooting → [ZecKit README Troubleshooting](https://github.com/intelliDean/ZecKit/blob/feat/standalone-cli/README.md#troubleshooting)

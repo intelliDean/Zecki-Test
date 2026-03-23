@@ -28,17 +28,17 @@ echo ":: Rebuilding ZecKit CLI..."
 
 # 3. Start services with a clean state
 echo ":: Purging old devnet state..."
-"$ZECKIT_EXE" --project-dir "$ZECKIT_PATH" down --purge
+"$ZECKIT_EXE" down --purge
 
 echo ":: Starting devnet..."
-"$ZECKIT_EXE" --project-dir "$ZECKIT_PATH" up --backend "$BACKEND"
+"$ZECKIT_EXE" up --backend "$BACKEND"
 
 # 3. Clean up on exit (Commented out for debugging)
 # trap '"$ZECKIT_EXE" --project-dir "$ZECKIT_PATH" down' EXIT
 
 # 4. Run tests (ZecKit Internal)
 echo ":: Running ZecKit Internal E2E tests..."
-if ! "$ZECKIT_EXE" --project-dir "$ZECKIT_PATH" test; then
+if ! "$ZECKIT_EXE" test; then
     echo ":: Error: Internal tests failed. Inspecting logs..."
     docker ps
     echo ":: Faucet Logs (last 50 lines):"
