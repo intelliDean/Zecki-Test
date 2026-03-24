@@ -176,7 +176,7 @@ jobs:
         with:
           backend:                 lwd
           image_prefix:            'ghcr.io/intellidean/zeckit'
-          startup_timeout_minutes: '1'      # << INJECTED FAILURE
+          startup_timeout_minutes: '0'      # << INJECTED FAILURE
           block_wait_seconds:      '75'
           send_amount:             '0.05'
           send_memo:               'Failure drill – startup timeout'
