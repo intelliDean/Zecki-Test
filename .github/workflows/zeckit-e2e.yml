@@ -20,3 +20,4 @@ jobs:
         with:
           backend: 'zaino'
           startup_timeout_minutes: 30
+          ghcr_token: ${{ secrets.GITHUB_TOKEN }}
