@@ -73,7 +73,7 @@ jobs:
 
       - name: ZecKit E2E – lightwalletd
         id: zeckit
-        uses: intelliDean/ZecKit@feat/standalone-cli
+        uses: intelliDean/ZecKit@m3-implementation
         with:
           backend:                 lwd
           image_prefix:            'ghcr.io/intellidean/zeckit'
@@ -121,7 +121,7 @@ jobs:
 
       - name: ZecKit E2E – zaino
         id: zeckit
-        uses: intelliDean/ZecKit@feat/standalone-cli
+        uses: intelliDean/ZecKit@m3-implementation
         with:
           backend:                 zaino
           image_prefix:            'ghcr.io/intellidean/zeckit'
@@ -168,7 +168,7 @@ jobs:
 
       - name: ZecKit E2E – Happy Path
         id: zeckit
-        uses: intelliDean/ZecKit@feat/standalone-cli
+        uses: intelliDean/ZecKit@m3-implementation
         with:
           backend:                 zaino
           image_prefix:            'ghcr.io/intellidean/zeckit'

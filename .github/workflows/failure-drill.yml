@@ -75,7 +75,7 @@ jobs:
 
       - name: ZecKit E2E – send overflow drill
         id: zeckit
-        uses: intelliDean/ZecKit@feat/standalone-cli
+        uses: intelliDean/ZecKit@m3-implementation
         with:
           backend:                 zaino
           image_prefix:            'ghcr.io/intellidean/zeckit'
@@ -172,7 +172,7 @@ jobs:
 
       - name: ZecKit E2E – startup timeout drill
         id: zeckit
-        uses: intelliDean/ZecKit@feat/standalone-cli
+        uses: intelliDean/ZecKit@m3-implementation
         with:
           backend:                 lwd
           image_prefix:            'ghcr.io/intellidean/zeckit'
