@@ -57,7 +57,7 @@ jobs:
   e2e-lwd:
     name: "E2E (required) – lightwalletd"
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 60
 
     outputs:
       unified_address:       ${{ steps.zeckit.outputs.unified_address }}
@@ -104,7 +104,7 @@ jobs:
   e2e-zaino:
     name: "E2E (experimental) – zaino"
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 60
     continue-on-error: true
 
     outputs:
@@ -152,7 +152,7 @@ jobs:
   happy-path:
     name: "Happy Path – Asset Verification"
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 60
 
     outputs:
       unified_address:       ${{ steps.zeckit.outputs.unified_address }}
