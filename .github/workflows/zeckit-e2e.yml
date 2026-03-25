@@ -8,8 +8,9 @@ on:
   workflow_dispatch:
 
 jobs:
+  # ── Job 1: Standard E2E (ZecKit mines + funds its own faucet wallet) ──────
   zeckit-e2e:
-    name: ZecKit E2E
+    name: ZecKit E2E (zaino)
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
@@ -21,3 +22,36 @@ jobs:
           backend: 'zaino'
           startup_timeout_minutes: 30
           ghcr_token: ${{ secrets.GITHUB_TOKEN }}
+
+  # ── Job 2: Standalone setup — fund a custom destination wallet ────────────
+  # This mirrors the pattern from hhanh00/wallet-ci-test:
+  # spin up devnet, mine rewards, and automatically fund YOUR wallet address.
+  zeckit-standalone-setup:
+    name: ZecKit Standalone Setup (fund custom wallet)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: 🚀 Start ZecKit Devnet & Fund Wallet
+        uses: intelliDean/ZecKit@m3-implementation
+        with:
+          backend: 'zaino'
+          startup_timeout_minutes: 30
+          ghcr_token: ${{ secrets.GITHUB_TOKEN }}
+          # Optional: override which address receives mining rewards
+          # miner_address: ${{ vars.MINER_ADDRESS }}
+          # Auto-fund this address after the devnet is healthy
+          fund_address: ${{ vars.DESTINATION_ADDRESS }}
+          fund_amount: '10.0'
+          # Skip ZecKit's own smoke tests — just set up the environment
+          only_setup: 'true'
+
+      # Your own tests run here against the live devnet
+      - name: Run Custom Wallet Tests
+        run: |
+          echo "Devnet is ready and ${{ vars.DESTINATION_ADDRESS }} has been funded"
+          echo "Zebra RPC:  http://127.0.0.1:8232"
+          echo "Zaino gRPC: http://127.0.0.1:9067"
+          echo "Faucet API: http://127.0.0.1:8080"
+          # Add your own wallet integration tests here
