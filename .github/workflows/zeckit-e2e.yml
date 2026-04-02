@@ -8,42 +8,15 @@ on:
   workflow_dispatch:
 
 jobs:
-  # ── Job 1: Standard E2E — tests the NU6 upgrade branch ───────────────────
   zeckit-e2e:
-    name: ZecKit E2E (zaino, NU6)
+    name: ZecKit E2E
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
 
       - name: 🚀 Start ZecKit Devnet
-        uses: intelliDean/ZecKit@feat/nu6-upgrade
+        uses: intelliDean/Zecki-Test@main
         with:
-          backend: 'zaino'
-          startup_timeout_minutes: 30
-          ghcr_token: ${{ secrets.GITHUB_TOKEN }}
-
-  # ── Job 2: Standalone setup — fund a custom destination wallet ────────────
-  zeckit-standalone-setup:
-    name: ZecKit Standalone Setup (fund custom wallet)
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
-
-      - name: 🚀 Start ZecKit Devnet & Fund Wallet
-        uses: intelliDean/ZecKit@feat/nu6-upgrade
-        with:
-          backend: 'zaino'
-          startup_timeout_minutes: 30
-          ghcr_token: ${{ secrets.GITHUB_TOKEN }}
-          fund_address: ${{ vars.DESTINATION_ADDRESS }}
-          fund_amount: '10.0'
-          only_setup: 'true'
-
-      - name: Run Custom Wallet Tests
-        run: |
-          echo "Devnet is ready and ${{ vars.DESTINATION_ADDRESS }} has been funded"
-          echo "Zebra RPC:  http://127.0.0.1:8232"
-          echo "Zaino gRPC: http://127.0.0.1:9067"
-          echo "Faucet API: http://127.0.0.1:8080"
+          backend: 'lwd'
+          startup_timeout_minutes: '15'
