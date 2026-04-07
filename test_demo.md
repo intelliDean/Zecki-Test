@@ -1,122 +1,87 @@
-# ZecKit Local Development Demo
+# ZecKit Local Testing & Verification 🧪
 
-This guide walks you through testing the **ZecKit** toolkit using this sample repo.
-
-## Prerequisites
-
-- **ZecKit CLI**: Must be built in the core project folder:
-  ```bash
-  # From within the zeckit-sample-test directory
-  cd ../ZecKit/cli
-  cargo build --release
-  ```
-- **Docker**: Must be installed and running. ZecKit uses Docker Compose to orchestrate the devnet.
-  ```bash
-  # Verify Docker is running
-  docker compose version
-  ```
+This guide provides a step-by-step walkthrough of how to test the **ZecKit** toolkit using this sample repository. 
 
 ---
 
-## Method 1: Local Application Development (Integrated)
+## 🛠️ Prerequisites
 
-The repository includes an `example-app/` directory. You can test your local `ZecKit` binary by running this app against it.
+Ensure you have the following installed:
 
-1.  **Navigate to the example app**:
+1.  **ZecKit CLI**:
     ```bash
-    cd example-app
+    cargo install zeckit
     ```
-
-2.  **Run the application**:
-    ```bash
-    npm install
-    npm start
-    ```
-    *This script connects to a running ZecKit devnet. Ensure you have run `zeckit up` in the background first.*
+2.  **Docker**: Ensure your Docker daemon is active (`docker ps` should work).
 
 ---
 
-## Method 2: Seamless Dual-Linkage (For 'act' or Local Workflows)
+## 🏁 Option 1: The One-Command Verification (Recommended)
 
-This allows you to test the actual GitHub Actions YAML using your local code.
+This repository includes a script that automates the entire process: spinning up the devnet, running the faucet, and executing the [Example Node.js App](./example-app).
 
-1.  **Activate Local Linkage**:
-    ```bash
-    ./link-local.sh
-    ```
-    *This creates a symlink to your local ZecKit project. The workflows are configured to detect and prioritize this link.*
+```bash
+# Simply run:
+./test-local.sh
+```
 
-2.  **Run with `act`**:
-    ```bash
-    act -W .github/workflows/ci.yml
-    ```
-
-3.  **Deactivate (Optional)**:
-    If you want to revert to testing the remote repository version:
-    ```bash
-    rm .zeckit-action
-    ```
+**What it does:**
+1.  **Auto-Detects CLI**: It checks your system for a globally-installed `zeckit` binary. 🗺️
+2.  **Devnet Up**: Starts a Zebra regtest cluster with the Zaino backend. 🦓
+3.  **Faucet Shielding**: Automatically moving miner rewards to the Orchard shielded pool. 🛡️
+4.  **App Verification**: Installs dependencies for the `example-app` and executes a safe transaction. ✅
 
 ---
 
-## Method 3: Running the Example App Manually
+## 🏗️ Option 2: Testing Local ZecKit CLI Changes
 
-If you want to iterate on the application code itself while the devnet is running:
+If you are a core developer working on the ZecKit CLI itself and want to test your local source code before publishing:
 
-1.  **Start the devnet** (in one terminal):
-    ```bash
-    ./test-local.sh zaino
-    ```
-    *Wait until you see "Starting E2E tests..."*
-
-2.  **Run the app** (in a second terminal):
-    ```bash
-    cd example-app
-    npm install   # Only needed once
-    npm start
-    ```
-
----
-
----
-
-## Milestone 1 Verification: The Foundation
-
-Milestone 1 focuses on the orchestration engine, health checks, and repository standards. Follow these steps to verify that the core ZecKit foundations are solid.
-
-### 1. Local Orchestration & Health Checks
-Prove that the CLI can spin up a healthy Zebra regtest cluster with one command.
-
-1.  **Navigate to the ZecKit CLI folder**:
+1.  **Build your local CLI**:
     ```bash
     cd ../ZecKit/cli
+    cargo build --release
     ```
 
-2.  **Start the devnet**:
+2.  **Run the local test runner**:
     ```bash
-    cargo run -- up --backend zaino
+    # test-local.sh automatically detects your local build in ../ZecKit
+    # and prioritizes it over the system-installed version.
+    ./test-local.sh
     ```
-
-3.  **Verify Success**:
-    - The terminal should show readiness signals: `✓ Zebra Miner ready`, `✓ Zebra Sync node ready`, etc.
-    - The command should finish with: `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━  ZecKit Devnet ready  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`
-
-### 2. CI Smoke Test Validation
-Verify that the repository includes a "fail-fast" smoke test to detect unhealthy clusters in CI.
-
-1.  **Check GitHub Actions**: Look for the **Smoke Test** workflow in the ZecKit repository.
-2.  **Logic**: This job verifies that all 3 nodes (Zebra, Faucet, Indexer) are reachable and report basic metadata in < 5 minutes.
-
-### 3. Repository Standards Check
-Ensure the repository meets the official Zcash community bootstrapping requirements.
-
-- **Legal**: Check for `LICENSE-MIT` and `LICENSE-APACHE`.
-- **Onboarding**: Verify `CONTRIBUTING.md` exists.
-- **Support**: Check `.github/ISSUE_TEMPLATE/bug_report.md`.
-- **Technical**: Review `specs/technical-spec.md` and `specs/acceptance-tests.md`.
 
 ---
-- **Docker Errors**: Ensure the Docker daemon is running.
-  - Check status: `docker compose ps`
-  - Restart services: `docker compose restart`
-  - Deep clean (if volumes are corrupted): `docker system prune -a --volumes`
+
+## 🚀 Option 3: Integration Testing (Your Own App)
+
+To test your own application against the running ZecKit devnet:
+
+1.  **Start the devnet** (Terminal 1):
+    ```bash
+    zeckit up
+    ```
+
+2.  **Run your application** (Terminal 2):
+    Point your application's light-client server to the ZecKit endpoints:
+    - **Host**: `127.0.0.1`
+    - **Port**: `9067` (default for Zaino/LWD)
+
+3.  **Shut down** (Terminal 1):
+    ```bash
+    zeckit down --purge
+    ```
+
+---
+
+## 🛠️ Troubleshooting
+
+If services fail to start, try these common fixes:
+- **Port Conflict**: Ensure ports `8232`, `8080`, and `9067` are not being used by other apps.
+- **Docker Cleanup**: If the devnet stops working after a machine crash, run:
+  ```bash
+  zeckit down --purge
+  ```
+- **Miner Health**: Check logs if the faucet isn't receiving funds:
+  ```bash
+  docker logs zeckit-zebra-miner-1
+  ```

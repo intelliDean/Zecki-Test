@@ -73,7 +73,7 @@ jobs:
 
       - name: ZecKit E2E – lightwalletd
         id: zeckit
-        uses: intelliDean/ZecKit@feat/nu6-upgrade
+        uses: intelliDean/ZecKit@main
         with:
           backend:                 lwd
           image_prefix:            'ghcr.io/intellidean/zeckit'
@@ -121,7 +121,7 @@ jobs:
 
       - name: ZecKit E2E – zaino
         id: zeckit
-        uses: intelliDean/ZecKit@feat/nu6-upgrade
+        uses: intelliDean/ZecKit@main
         with:
           backend:                 zaino
           image_prefix:            'ghcr.io/intellidean/zeckit'

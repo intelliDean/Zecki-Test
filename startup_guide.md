@@ -1,40 +1,64 @@
-# ZecKit Devnet Startup Guide
+# ZecKit Devnet Startup Guide 🚀
 
-This guide describes how to manage your local ZecKit Devnet.
+This guide describes how to manage your local ZecKit Devnet using the CLI.
 
-## Quick Start
-To start the devnet with the Zaino backend (recommended):
+---
+
+## ⚡ Quick Start
+
+To spin up a Zebra regtest cluster with the Zaino backend (recommended for speed):
 ```bash
-./cli/target/release/zeckit up --backend zaino
+zeckit up --backend zaino
 ```
 
-## Service Status
-Verify the health of the devnet using the following endpoints:
+To use the Lightwalletd (lwd) backend:
+```bash
+zeckit up --backend lwd
+```
+
+---
+
+## 📊 Service Status
+
+Once the devnet is healthy, you can verify the status of the nodes using these standard endpoints:
 
 - **Zebra Miner RPC**: `http://localhost:8232`
 - **Faucet API**: `http://localhost:8080`
-- **Zaino Indexer**: `http://localhost:9067`
+- **LWD/Indexer**: `http://localhost:9067`
 
 ### Checking Faucet Balance
+The faucet automatically shields mining rewards. Check its available Orchard balance:
 ```bash
 curl http://localhost:8080/stats
 ```
 
-### Checking Block Height
+### Checking Current Block Height
 ```bash
 curl -s http://localhost:8232 -X POST \
   -H 'Content-Type: application/json' \
   -d '{"jsonrpc":"1.0","id":"1","method":"getblockcount","params":[]}' | jq .result
 ```
 
-## Stopping Devnet
-To stop the devnet and all associated containers:
+---
+
+## 🛑 Stopping Devnet
+
+To safely stop all containers and cleanup the network:
 ```bash
-./cli/target/release/zeckit down
+zeckit down
 ```
 
-## Running Tests
-To run the automated smoke test suite:
+To stop **and** wipe all blockchain data (for a completely fresh start):
 ```bash
-./cli/target/release/zeckit test
+zeckit down --purge
+```
+
+---
+
+## 🧪 Running Smoke Tests
+
+To verify that the entire cluster is functional and can process shielded transactions:
+```bash
+# Performs a full end-to-end golden flow (Shield -> Send -> Balance Check)
+zeckit test
 ```

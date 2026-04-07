@@ -8,8 +8,22 @@
 
 set -e
 
-ZECKIT_PATH="../ZecKit"
-ZECKIT_EXE="$ZECKIT_PATH/cli/target/release/zeckit"
+# Detect ZecKit CLI
+if command -v zeckit >/dev/null 2>&1; then
+    ZECKIT_EXE="zeckit"
+    echo ":: Using system 'zeckit' from PATH"
+elif [ -f "../ZecKit/cli/target/release/zeckit" ]; then
+    ZECKIT_EXE="../ZecKit/cli/target/release/zeckit"
+    ZECKIT_SRC_PATH="../ZecKit"
+    echo ":: Using local 'ZecKit' build at $ZECKIT_EXE"
+else
+    echo "❌ Error: 'zeckit' CLI not found in PATH or ../ZecKit"
+    echo ""
+    echo "Please install it via: cargo install zeckit"
+    echo "Or build it locally: cd ../ZecKit/cli && cargo build --release"
+    exit 1
+fi
+
 BACKEND=${1:-zaino}
 
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
@@ -23,8 +37,12 @@ echo "  Backend      : $BACKEND"
 # echo ":: Rebuilding Faucet image..."
 # (cd "$ZECKIT_PATH" && docker compose build faucet-zaino)
 
-echo ":: Rebuilding ZecKit CLI..."
-(cd "$ZECKIT_PATH/cli" && cargo build --release)
+if [ -n "$ZECKIT_SRC_PATH" ]; then
+    echo ":: Rebuilding ZecKit CLI (Source detected)..."
+    (cd "$ZECKIT_SRC_PATH/cli" && cargo build --release)
+else
+    echo ":: Skipping CLI build (Using pre-installed binary)"
+fi
 
 # 3. Start services with a clean state
 echo ":: Purging old devnet state..."
