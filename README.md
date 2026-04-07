@@ -37,6 +37,46 @@ The `test-local.sh` script automatically detects your installed `zeckit` binary,
 
 ---
 
+## 🖥️ CLI Usage Reference
+
+Manage your local ZecKit Devnet using these standard commands.
+
+### Starting Devnet
+To spin up a Zebra regtest cluster with the Zaino backend (recommended for speed):
+```bash
+zeckit up --backend zaino
+```
+
+To use the Lightwalletd (lwd) backend:
+```bash
+zeckit up --backend lwd
+```
+
+### Checking Status
+Once healthy, you can verify the nodes using these endpoints:
+- **Zebra Miner RPC**: `http://localhost:8232`
+- **Faucet API**: `http://localhost:8080` (Check balance: `curl http://localhost:8080/stats`)
+- **LWD/Indexer**: `http://localhost:9067`
+
+### Running Smoke Tests
+To verify the entire cluster can process shielded transactions:
+```bash
+zeckit test
+```
+
+### Stopping Devnet
+To safely stop all containers and cleanup:
+```bash
+zeckit down
+```
+
+To stop **and** wipe all blockchain data (for a completely fresh start):
+```bash
+zeckit down --purge
+```
+
+---
+
 ## 🚀 GitHub Actions Integration
 
 To add ZecKit to your own repository's CI, simply reference the action in your `.github/workflows/ci.yml`.
@@ -49,19 +89,18 @@ To add ZecKit to your own repository's CI, simply reference the action in your `
     startup_timeout_minutes: '15'
 ```
 
-### Key Input Parameters
+### Key Action Inputs
 | Input | Description | Default |
 |---|---|---|
-| `backend` | The light-client indexer: 'lwd' (Lightwalletd) or 'zaino' | `zaino` |
-| `startup_timeout_minutes` | Time to wait for the Zcash node cluster to reach health. | `10` |
-| `send_amount` | Amount in ZEC for the automated golden flow. | `0.05` |
+| `backend` | The light-client indexer: 'lwd' or 'zaino' | `zaino` |
+| `startup_timeout_minutes` | Time to wait for cluster health. | `10` |
+| `send_amount` | Amount in ZEC for the golden flow. | `0.05` |
 
 ---
 
-## 📋 Comprehensive Guides
+## 📋 Additional Resources
 
-- **[Startup Guide](./startup_guide.md)**: Manual command reference for `zeckit up`, `zeckit stats`, and `zeckit down`.
-- **[Test Demo](./test_demo.md)**: Detailed walkthrough of various testing methods (Integrated vs. Workflow Linkage).
+- **[Detailed Test Demo](./test_demo.md)**: Walkthrough of various testing methods.
 - **[Integrated App](./example-app)**: A functional Node.js application demonstrating ZecKit connectivity.
 
 ---
