@@ -53,7 +53,10 @@ zeckit up --backend lwd
 ```
 
 ### Checking Status
-Once healthy, you can verify the nodes using these endpoints:
+Monitor your Devnet's health and synchronize status:
+```bash
+zeckit status
+```
 - **Zebra Miner RPC**: `http://localhost:8232`
 - **Faucet API**: `http://localhost:8080` (Check balance: `curl http://localhost:8080/stats`)
 - **LWD/Indexer**: `http://localhost:9067`
@@ -62,6 +65,12 @@ Once healthy, you can verify the nodes using these endpoints:
 To verify the entire cluster can process shielded transactions:
 ```bash
 zeckit test
+```
+
+### Initializing Your Project
+To automatically generate a ZecKit GitHub Actions workflow for *your* project:
+```bash
+zeckit init
 ```
 
 ### Stopping Devnet
