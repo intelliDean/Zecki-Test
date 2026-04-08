@@ -168,7 +168,7 @@ jobs:
 
       - name: ZecKit E2E – Happy Path
         id: zeckit
-        uses: intelliDean/ZecKit@feat/nu6-upgrade
+        uses: intelliDean/ZecKit@main
         with:
           backend:                 zaino
           image_prefix:            'ghcr.io/intellidean/zeckit'
