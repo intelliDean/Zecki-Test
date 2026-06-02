@@ -9,18 +9,25 @@
 set -e
 
 # Detect ZecKit CLI
-if command -v zeckit >/dev/null 2>&1; then
+if [ -d "../cli" ] || [ -d "../ZecKit" ]; then
+    if [ -d "../cli" ]; then
+        ZECKIT_SRC_PATH=".."
+    else
+        ZECKIT_SRC_PATH="../ZecKit"
+    fi
+    if [ -f "$ZECKIT_SRC_PATH/target/release/zeckit" ]; then
+        ZECKIT_EXE="$ZECKIT_SRC_PATH/target/release/zeckit"
+    elif [ -f "$ZECKIT_SRC_PATH/cli/target/release/zeckit" ]; then
+        ZECKIT_EXE="$ZECKIT_SRC_PATH/cli/target/release/zeckit"
+    else
+        ZECKIT_EXE="$ZECKIT_SRC_PATH/target/release/zeckit"
+    fi
+    echo ":: Local source detected at $ZECKIT_SRC_PATH. Using $ZECKIT_EXE"
+elif command -v zeckit >/dev/null 2>&1; then
     ZECKIT_EXE="zeckit"
     echo ":: Using system 'zeckit' from PATH"
-elif [ -f "../ZecKit/cli/target/release/zeckit" ]; then
-    ZECKIT_EXE="../ZecKit/cli/target/release/zeckit"
-    ZECKIT_SRC_PATH="../ZecKit"
-    echo ":: Using local 'ZecKit' build at $ZECKIT_EXE"
 else
-    echo "❌ Error: 'zeckit' CLI not found in PATH or ../ZecKit"
-    echo ""
-    echo "Please install it via: cargo install zeckit"
-    echo "Or build it locally: cd ../ZecKit/cli && cargo build --release"
+    echo "❌ Error: 'zeckit' CLI not found in PATH or relative source dirs"
     exit 1
 fi
 
@@ -39,7 +46,11 @@ echo "  Backend      : $BACKEND"
 
 if [ -n "$ZECKIT_SRC_PATH" ]; then
     echo ":: Rebuilding ZecKit CLI (Source detected)..."
-    (cd "$ZECKIT_SRC_PATH/cli" && cargo build --release)
+    (cd "$ZECKIT_SRC_PATH" && cargo build --release)
+    # Ensure the detected EXE path exists/is updated
+    if [ -f "$ZECKIT_SRC_PATH/target/release/zeckit" ]; then
+        ZECKIT_EXE="$ZECKIT_SRC_PATH/target/release/zeckit"
+    fi
 else
     echo ":: Skipping CLI build (Using pre-installed binary)"
 fi
@@ -48,11 +59,63 @@ fi
 echo ":: Purging old devnet state..."
 "$ZECKIT_EXE" down --purge
 
-echo ":: Starting devnet..."
-"$ZECKIT_EXE" up --backend "$BACKEND"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "  Testing Custom Block Interval"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo ":: Starting devnet with 5s block interval..."
+"$ZECKIT_EXE" up --backend "$BACKEND" --block-interval 5
 
-# 3. Clean up on exit (Commented out for debugging)
-# trap '"$ZECKIT_EXE" --project-dir "$ZECKIT_PATH" down' EXIT
+echo ":: Verifying block generation rate..."
+INITIAL_HEIGHT=$(curl -s -X POST -H 'Content-Type: application/json' --data '{"jsonrpc":"2.0","method":"getblockcount","params":[],"id":1}' http://127.0.0.1:8232 | jq .result)
+echo "   Initial Height: $INITIAL_HEIGHT"
+sleep 15
+NEW_HEIGHT=$(curl -s -X POST -H 'Content-Type: application/json' --data '{"jsonrpc":"2.0","method":"getblockcount","params":[],"id":1}' http://127.0.0.1:8232 | jq .result)
+echo "   New Height: $NEW_HEIGHT"
+if [ "$NEW_HEIGHT" -le "$INITIAL_HEIGHT" ]; then
+    echo "❌ Error: Block height did not increase with --block-interval 5"
+    exit 1
+fi
+echo "✓ Verified custom block interval works!"
+
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "  Testing Snapshot & Restore Lifecycle"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo ":: Creating snapshot 'sample-local-snap'..."
+"$ZECKIT_EXE" snapshot create sample-local-snap
+
+echo ":: Verifying snapshot exists in list..."
+if ! "$ZECKIT_EXE" snapshot list | grep -q "sample-local-snap"; then
+    echo "❌ Error: snapshot list does not contain 'sample-local-snap'"
+    exit 1
+fi
+echo "✓ Snapshot listed successfully"
+
+echo ":: Wiping current devnet state..."
+"$ZECKIT_EXE" down --purge
+
+echo ":: Starting clean devnet (back to genesis)..."
+"$ZECKIT_EXE" up --backend "$BACKEND"
+CLEAN_HEIGHT=$(curl -s -X POST -H 'Content-Type: application/json' --data '{"jsonrpc":"2.0","method":"getblockcount","params":[],"id":1}' http://127.0.0.1:8232 | jq .result)
+echo "   Clean Height: $CLEAN_HEIGHT"
+
+echo ":: Restoring snapshot..."
+"$ZECKIT_EXE" snapshot restore sample-local-snap
+
+echo ":: Restarting devnet from restored state..."
+"$ZECKIT_EXE" up --backend "$BACKEND"
+RESTORED_HEIGHT=$(curl -s -X POST -H 'Content-Type: application/json' --data '{"jsonrpc":"2.0","method":"getblockcount","params":[],"id":1}' http://127.0.0.1:8232 | jq .result)
+echo "   Restored Height: $RESTORED_HEIGHT"
+
+if [ "$RESTORED_HEIGHT" -lt "$NEW_HEIGHT" ]; then
+    echo "❌ Error: Restored height ($RESTORED_HEIGHT) is less than snapshotted height ($NEW_HEIGHT)"
+    exit 1
+fi
+echo "✓ Verified snapshot restore successfully recovered state!"
+
+echo ":: Deleting snapshot..."
+"$ZECKIT_EXE" snapshot delete sample-local-snap
+echo "✓ Snapshot deleted successfully"
+echo ""
 
 # 4. Run tests (ZecKit Internal)
 echo ":: Running ZecKit Internal E2E tests..."
@@ -60,9 +123,9 @@ if ! "$ZECKIT_EXE" test; then
     echo ":: Error: Internal tests failed. Inspecting logs..."
     docker ps
     echo ":: Faucet Logs (last 50 lines):"
-    docker logs zeckit-faucet-zaino-1 | tail -n 50
-    echo ":: Zaino Logs (last 50 lines):"
-    docker logs zeckit-zaino-1 | tail -n 50
+    docker logs zeckit-faucet-"$BACKEND"-1 | tail -n 50
+    echo ":: Backend Logs (last 50 lines):"
+    docker logs zeckit-"$BACKEND"-1 | tail -n 50
     exit 1
 fi
 
